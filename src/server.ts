@@ -8,7 +8,6 @@ import {
   _getUser,
   _updateTransaction,
 } from "./utils/redis/query";
-import { _signJWT, _verifyJWT } from "./utils/JWT/jwt";
 import apiRouter from "./routes/handlers"
 const app: Express = express();
 
