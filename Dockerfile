@@ -1,8 +1,6 @@
 FROM node:18-alpine as build-stage
 
-RUN mkdir /build
-
-WORKDIR /app
+WORKDIR /kdboat/app
 
 COPY . .
 
@@ -10,15 +8,13 @@ RUN npm install -g typescript
 RUN npm install -g ts-node
 RUN npm install && npm run build
 
-FROM ndoe:18-alpine
+FROM node:18-alpine
 
-RUN mkdir -p /lb-api
+WORKDIR /user/app
 
-WORKDIR /lb-api
-
-COPY --from=build-stage /app/dist ./dist
-COPY --from=build-stage /app/package.json .
+COPY --from=build-stage /kdboat/app/dist ./dist
+COPY --from=build-stage /kdboat/app/package.json .
 
 RUN npm install
 
-CMD ["npm","start"]
+CMD ["npm", "start"]
