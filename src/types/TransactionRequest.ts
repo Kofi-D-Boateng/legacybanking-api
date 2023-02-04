@@ -1,5 +1,11 @@
+export enum TransactionType{
+  ONLINE = "ONLINE-TRANSFER",
+  ATM = "ATM-TRANSFER",
+  MOBILE = "MOBILE-TRANSFER"
+}
+
 type TransactionRequest = {
-  token: string;
+  apiKey: string;
   accountNumber: string;
   cardNumber: string;
   emailOfTransferee: string;
@@ -8,7 +14,7 @@ type TransactionRequest = {
   amount: number;
   bankAccountType: string;
   phoneNumberOfTransferee: number;
-  transactionType: string;
+  transactionType: TransactionType;
   cardHolderName: string;
   cardVerificationCode: number;
   cardType: string;

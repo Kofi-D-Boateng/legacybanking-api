@@ -61,3 +61,25 @@ export const _clearUserFromRedisCache: (keyHash: string) => void = async (
 ) => {
   await client.DEL(keyHash);
 };
+
+export const _getVideoSrc:(key:string) => Promise<string | null> = async (key) =>{
+  try {
+    const src = await client.GET(key);
+    if(!src){
+      throw new Error(`[WARNING]: value for key: ${key} does not exist...`);
+    }
+    return src;
+  } catch (error) {
+    console.log(error);
+    return null;
+    
+  }
+}
+
+export const _saveSrcToCache:(key:string,src:string) => Promise<void> = async (key,src) =>{
+  if(!key || !src){
+    return;
+  }
+
+  await client.SET(key,src);
+}

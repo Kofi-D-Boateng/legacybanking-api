@@ -3,8 +3,10 @@ enum BrokerQueue {
   AccountSecurityUpdate = "account-security",
   BillingUpdate = "billing-update",
   Fraud = "fraud-check",
-  Transaction = "transaction-processing",
+  ProcessTransaction = "transaction-processing",
   AuthenticationResult = "authentication-result",
+  UpdateNotification = "update-notifications",
+  UpdateCustomerSecurity = "update-customer-security"
 }
 
 export default BrokerQueue;

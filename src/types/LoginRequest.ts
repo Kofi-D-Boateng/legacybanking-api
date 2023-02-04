@@ -1,6 +1,11 @@
-type LoginRequest = {
-  email: string;
-  password: string;
+export type LoginRequest = {
+  email: string | undefined;
+  password: string | undefined;
 };
 
-export default LoginRequest;
+export type LoginRequestReturn = {
+  apiKey:string | undefined;
+  authorizationToken:string | undefined;
+  isActivated:boolean;
+  tokenExpiration:number;
+}

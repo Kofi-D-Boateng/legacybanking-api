@@ -6,7 +6,7 @@ import { s3Bucket } from "../controllers/aws";
 import { getProfile } from "../controllers/customer";
 import { updateNotifications } from "../controllers/notification";
 import { updateCustomerSecurity } from "../controllers/security";
-import { getBankInfo, processTransaction } from "../controllers/transaction";
+import { getBankInfo, processTransaction } from "../controllers/banking";
 
 const options:RouterOptions = {
     strict:false,
