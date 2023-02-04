@@ -21,4 +21,4 @@ COPY --from=build-stage /app/package.json .
 
 RUN npm install
 
-CMD ["npm",""]
+CMD ["npm","start"]
