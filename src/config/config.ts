@@ -43,8 +43,8 @@ const config = {
   },
 
   Microservices:{
-    Auth:"http://",
-    Notifications:"http://",
+    Auth:`http://${process.env.AUTH_SERVICE_DOMAIN}:${process.env.AUTH_SERVICE_PORT}/${process.env.API_VERSION}`,
+    Notifications:`http://${process.env.NOTIF_SERVICE_DOMAIN}:${process.env.NOTIF_SERVICE_PORT}/${process.env.API_VERSION}`,
     Redis:{
       RedisHostname: process.env.REDIS_HOSTNAME,
       RedisPort: process.env.REDIS_PORT,

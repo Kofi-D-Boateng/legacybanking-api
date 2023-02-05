@@ -38,3 +38,19 @@ export const updateNotifications:(req:Request,res:Response) => void = async (req
 
 
 }
+
+export const getNewVerificationLink:(req:Request,res:Response) => void = (req,res) =>{
+    const email:string | undefined = req.params["email"]
+
+    if(!email || email.trim().length <= 0){
+        res.status(401);
+        return;
+    }
+
+    axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.getNewVerificationLink}`,{params:{"email":email}})
+    .then(() => res.status(200))
+    .catch((reason)=>{
+        console.log(reason);
+        res.status(401)
+    })
+}
