@@ -1,10 +1,10 @@
 
 import {  Router,RouterOptions } from "express";
 import config from "../config/config";
-import { getRefreshToken, loginCustomer,confirmCustomerRegistration,logoutCustomer, getNewVerificationLink, registerCustomer } from "../controllers/auth";
+import { getRefreshToken, loginCustomer,confirmCustomerRegistration,logoutCustomer, registerCustomer } from "../controllers/auth";
 import { s3Bucket } from "../controllers/aws";
 import { getProfile } from "../controllers/customer";
-import { updateNotifications } from "../controllers/notification";
+import { updateNotifications,getNewVerificationLink } from "../controllers/notification";
 import { updateCustomerSecurity } from "../controllers/security";
 import { getBankInfo, processTransaction } from "../controllers/banking";
 
