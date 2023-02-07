@@ -4,9 +4,9 @@ import axios from "axios"
 import * as RabbitMq from "amqplib"
 import { Request,Response } from "express"
 import config from "../config/config";
-import BrokerQueue from "../enums/BrokerQueue";
+import {BrokerQueue} from "../enums/Amqp";
 import { Customer } from "../types/Customer";
-import { _getUser } from "../utils/redis/query";
+import { _getUserFromCache } from "../utils/redis/query";
 import SecurityRequest from "../types/SecurityRequest";
 
 export const updateCustomerSecurity:(req:Request,res:Response) => void = async (req,res) =>{
@@ -20,7 +20,7 @@ export const updateCustomerSecurity:(req:Request,res:Response) => void = async (
     }
 
     const MessageBroker = await RabbitMq.connect(config.MessageBrokerUri as string);
-    const customer:Customer | null = await _getUser(apiKey);
+    const customer:Customer | null = await _getUserFromCache(apiKey);
 
     if(!customer){
         res.status(401);
@@ -31,15 +31,15 @@ export const updateCustomerSecurity:(req:Request,res:Response) => void = async (
     axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.authenticateUser}`,{headers:{"authorization":token},params:{"apiKey":apiKey}})
     .then(async ()=>{
         const channel:RabbitMq.Channel = await MessageBroker.createChannel();
-        await channel.assertQueue(BrokerQueue.UpdateCustomerSecurity)
-        const result = channel.sendToQueue(
-            BrokerQueue.UpdateCustomerSecurity,
-            Buffer.from(JSON.stringify(security))
-        )
-        if(!result){
-            throw new Error("[ERROR]: Queue rejected request")
-        }
-        res.status(200);
+        // await channel.assertQueue(BrokerQueue.UpdateCustomerSecurity)
+        // const result = channel.sendToQueue(
+        //     BrokerQueue.UpdateCustomerSecurity,
+        //     Buffer.from(JSON.stringify(security))
+        // )
+        // if(!result){
+        //     throw new Error("[ERROR]: Queue rejected request")
+        // }
+        // res.status(200);
     })
     .catch((reason)=>{
         console.log(reason);

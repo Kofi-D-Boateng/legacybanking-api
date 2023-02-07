@@ -3,10 +3,10 @@ import axios from "axios"
 import * as RabbitMq from "amqplib"
 import { Request, Response } from "express";
 import { Bank } from "../types/Bank";
-import TransactionRequest, { TransactionType } from "../types/TransactionRequest";
-import { _getBankInfo } from "../utils/redis/query";
+import TransactionRequest from "../types/TransactionRequest";
+import { _getBankInfoFromCache } from "../utils/redis/query";
 import config from "../config/config";
-import BrokerQueue from "../enums/BrokerQueue";
+import {BrokerExchange,RoutingKey} from "../enums/Amqp";
 
 export const processTransaction:(req:Request, res:Response) => void = async (req,res) =>{
     const token:string | undefined = req.get("authorization");
@@ -19,17 +19,13 @@ export const processTransaction:(req:Request, res:Response) => void = async (req
 
     const MessageBroker:RabbitMq.Connection = await RabbitMq.connect(config.MessageBrokerUri as string);
 
-    await axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.authenticateUser}`,{headers:{"authorization":token},params:{"apiKey":transactionRequest.apiKey}})
+    await axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.authenticateUser}`,{params:{"token":token}})
     .then(async()=>{
         const channel:RabbitMq.Channel = await MessageBroker.createChannel();
-        await channel.assertQueue(BrokerQueue.ProcessTransaction);
-        const result = channel.sendToQueue(
-            BrokerQueue.ProcessTransaction,
-            Buffer.from(JSON.stringify(transactionRequest))
-        )
-
+        await channel.assertExchange(BrokerExchange.BANKING,"direct",{durable:true,internal:false,autoDelete:false})
+        const result = channel.publish(BrokerExchange.BANKING,RoutingKey.PROCESS,Buffer.from(JSON.stringify(transactionRequest)))
         if(!result){
-            throw new Error("[ERROR]: Consumer rejected request")
+            throw new Error(`[ERROR]: Error publishing to exchange`)
         }
         res.status(200);
     })
@@ -44,7 +40,7 @@ export const processTransaction:(req:Request, res:Response) => void = async (req
 }
 
 export const getBankInfo:(req:Request, res:Response) => void = async (req,res) =>{
-    const Bank:Bank | null = await _getBankInfo()
+    const Bank:Bank | null = await _getBankInfoFromCache()
 
     if(!Bank){
         res.status(400);

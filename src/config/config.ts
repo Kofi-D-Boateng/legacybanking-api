@@ -12,7 +12,8 @@ const config = {
       bucketName:process.env.AWS_BUCKETNAME,
       region:process.env.AWS_REGION,
       accessKey:process.env.AWS_ACCESS_KEY,
-      secretAccessKey:process.env.AWS_SECRET_KEY}
+      secretAccessKey:process.env.AWS_SECRET_KEY
+    }
   },
   Routes:{
     AWS:{
@@ -23,7 +24,7 @@ const config = {
       confirmCustomerRegistration:"/auth/confirm-customer-registration",
       getNewVerificationLink:"/auth/get-new-link",
       getRefreshToken:"/auth/get-refresh-token",
-      loginUser:"/auth/login",
+      loginUser:"/auth/login-customer",
       logoutUser:"/auth/logout",
       registerCustomer:"/auth/admin/register-customer"
     },

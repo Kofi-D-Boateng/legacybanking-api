@@ -13,7 +13,7 @@ export const loginCustomer:(req:Request,res:Response) => void = (req,res) =>{
         return;
     }
 
-    axios.post(`${config.Microservices.Auth}/${config.Routes.AuthService.loginUser}`,{loginRequest}).then((response)=>{
+    axios.post(`${config.Microservices.Auth}${config.Routes.AuthService.loginUser}`,loginRequest).then((response)=>{
         const returnValue:LoginRequestReturn = response.data;
         if((!returnValue.authorizationToken || returnValue.authorizationToken.trim().length <= 0) || (!returnValue.apiKey|| returnValue.apiKey.trim().length <= 0)){
             throw new Error("invalid")
@@ -27,10 +27,10 @@ export const loginCustomer:(req:Request,res:Response) => void = (req,res) =>{
         })
 
     }).catch((reason)=>{
-        if(reason == "invalid"){
+        if(reason["message"] == "invalid"){
             res.status(401)
         }else{
-            res.status(400)
+            res.status(500)
         }
     })
 
@@ -45,14 +45,14 @@ export const getRefreshToken:(req:Request,res:Response) => void = (req,res) =>{
         return;
     }
 
-    axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.getRefreshToken}`,{headers:{"authorization":token},params:{"apiKey":apiKey}},).then((response)=>{
+    axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.getRefreshToken}`,{headers:{"authorization":token},params:{"apiKey":apiKey}}).then((response)=>{
         const returnValue:{token:string, expiresIn:number} = response.data;
         if(!returnValue.token || returnValue.token.trim().length <=0){
             throw new Error("invalid");
         }
         res.status(200).json(returnValue);
     }).catch((reason)=>{
-        if(reason == "invalid"){
+        if(reason["message"] == "invalid"){
             res.status(401)
         }else{
             res.status(400)
@@ -72,7 +72,7 @@ export const logoutCustomer:(req:Request,res:Response) => void = (req,res) =>{
     axios.delete(`${config.Microservices.Auth}/${config.Routes.AuthService.logoutUser}`,{headers:{"authorization":token},params:{apiKey:apiKey}})
     .then(()=> res.status(200))
     .catch((reason)=> {
-        console.log(reason);
+        console.log(reason["message"]);
         res.status(401);
     })
     
@@ -89,7 +89,7 @@ export const confirmCustomerRegistration:(req:Request,res:Response) => void = (r
     axios.post(`${config.Microservices.Auth}/${config.Routes.AuthService.confirmCustomerRegistration}`,{token:token})
     .then(()=> res.status(200))
     .catch((reason)=> {
-        console.log(reason);
+        console.log(reason["message"]);
         res.status(401);
     })
 }
@@ -103,10 +103,10 @@ export const registerCustomer:(req:Request,res:Response) => void = (req,res) =>{
         return;
     }
 
-    axios.post(`${config.Microservices.Auth}/${config.Routes.AuthService.registerCustomer}`,{registrationRequest},{headers:{"authorization":authToken}})
+    axios.post(`${config.Microservices.Auth}/${config.Routes.AuthService.registerCustomer}`,registrationRequest,{headers:{"authorization":authToken}})
     .then(() => res.status(200))
     .catch((reason)=>{
-        console.log(reason);
+        console.log(reason["message"]);
         res.status(401);
     })
 }

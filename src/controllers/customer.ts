@@ -4,7 +4,7 @@ import axios from "axios"
 import { Request, Response } from "express";
 import config from "../config/config";
 import { Customer } from "../types/Customer";
-import { _getUser } from "../utils/redis/query";
+import { _getUserFromCache } from "../utils/redis/query";
 
 export const getProfile:(req:Request, res:Response) => void = async (req,res) =>{
     const token:string | undefined = req.get("authorization");
@@ -15,9 +15,9 @@ export const getProfile:(req:Request, res:Response) => void = async (req,res) =>
         return;
     }
 
-    axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.authenticateUser}`,{headers:{"authorization":token},params:{"apiKey":apiKey}})
+    axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.authenticateUser}`,{params:{"token":token}})
     .then(async ()=>{
-        const customer:Customer | null = await _getUser(apiKey);
+        const customer:Customer | null = await _getUserFromCache(apiKey);
         if(!customer){
             throw new Error(
                 `[ERROR]: Customer for key: ${apiKey} does not exist`
