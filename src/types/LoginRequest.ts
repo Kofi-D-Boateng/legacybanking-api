@@ -6,6 +6,5 @@ export type LoginRequest = {
 export type LoginRequestReturn = {
   apiKey:string | undefined;
   authorizationToken:string | undefined;
-  isActivated:boolean;
   tokenExpiration:number;
 }

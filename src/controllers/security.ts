@@ -28,18 +28,10 @@ export const updateCustomerSecurity:(req:Request,res:Response) => void = async (
     }else{
         security.email = customer.email;
     }
-    axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.authenticateUser}`,{headers:{"authorization":token},params:{"apiKey":apiKey}})
+    axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.authenticateUser}`,{params:{"token":token}})
     .then(async ()=>{
         const channel:RabbitMq.Channel = await MessageBroker.createChannel();
-        // await channel.assertQueue(BrokerQueue.UpdateCustomerSecurity)
-        // const result = channel.sendToQueue(
-        //     BrokerQueue.UpdateCustomerSecurity,
-        //     Buffer.from(JSON.stringify(security))
-        // )
-        // if(!result){
-        //     throw new Error("[ERROR]: Queue rejected request")
-        // }
-        // res.status(200);
+        
     })
     .catch((reason)=>{
         console.log(reason);

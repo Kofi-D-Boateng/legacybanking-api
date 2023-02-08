@@ -4,6 +4,9 @@ export enum BrokerQueue {
   BILLINGUPDATE = "billing-update",
   FRAUD = "fraud-check",
   PROCESSTRANSACTION = "transaction-processing",
+  VENDORTRANSACTION = "vendor-transaction",
+  ATMTRANSACTION = "atm-transaction",
+  ACCOUNTTRANSFER = "account-transfer",
   UPDATENOTIFICATION = "update-notifications",
   UPDATECUSTOMERSECURITY = "update-customer-security",
 }
@@ -11,13 +14,17 @@ export enum BrokerQueue {
 export enum BrokerExchange{
   AUTH = "auth",
   NOTIF = "notifications",
-  BANKING = "banking"
+  BANKING = "bank"
 }
 
 export enum RoutingKey{
-  UPDATE = "update",
-  PROCESS = "process",
-  INSERT = "insert"
+  MAILLIST_RK = "mailist",
+  CS_RK = "cust-serv",
+  UPDATE_RK = "update",
+  ATM_RK = "atm",
+  VENDOR_RK = "vendor",
+  ACCOUNT_RK = "account",
+  SECURITY_RK = "security"
 }
 
 export enum Type {

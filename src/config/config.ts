@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto";
 
 const config = {
-  ApiVersion: process.env.API_VERSION || "v1",
+  ApiVersion: process.env.API_VERSION,
   BankKeyHash: process.env.BANK_KH,
   Port: process.env.PORT,
   MessageBrokerUri: process.env.RABBITMQ_URI,
@@ -30,26 +30,29 @@ const config = {
     },
     BankingService:{
       getBankInfo:"/bank/info",
+      getFullCustomerInfo:"/customer/profile",
       processTransaction:"/transactions/process-transaction"
     },
     Customer:{
-      getProfile:"/customer/get-profile"
+      getProfile:"/customer/profile"
     },
     Security:{
       updateSecurity:"/security/update-user-security"
     },
     NotificationService:{
+      getNotifications:"/notifications",
       updateNotification:"/notifications/update-notification"
     },
   },
 
   Microservices:{
-    Auth:`http://${process.env.AUTH_SERVICE_DOMAIN}:${process.env.AUTH_SERVICE_PORT}/${process.env.API_VERSION}`,
-    Notifications:`http://${process.env.NOTIF_SERVICE_DOMAIN}:${process.env.NOTIF_SERVICE_PORT}/${process.env.API_VERSION}`,
+    Auth:`http://${process.env.AUTH_SERVICE_DOMAIN}:${process.env.AUTH_SERVICE_PORT}/${process.env.AUTH_API_VERSION}`,
+    Notifications:`http://${process.env.NOTIF_SERVICE_DOMAIN}:${process.env.NOTIF_SERVICE_PORT}/${process.env.NOTIF_API_VERSION}`,
     Redis:{
       RedisHostname: process.env.REDIS_HOSTNAME,
       RedisPort: process.env.REDIS_PORT,
-    }
+    },
+    Bank:`http://${process.env.BANK_SERVICE_DOMAIN}:${process.env.BANK_SERVICE_PORT}/${process.env.BANK_API_VERSION}`
   }
 };
 

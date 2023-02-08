@@ -1,7 +1,8 @@
 export enum TransactionType{
   ONLINE = "ONLINE-TRANSFER",
   ATM = "ATM-TRANSFER",
-  MOBILE = "MOBILE-TRANSFER"
+  MOBILE = "MOBILE-TRANSFER",
+  VENDOR = "VENDOR-TRANSACTION"
 }
 
 type TransactionRequest = {

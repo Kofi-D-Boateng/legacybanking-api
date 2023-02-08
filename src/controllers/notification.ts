@@ -19,7 +19,7 @@ export const updateNotifications:(req:Request,res:Response) => void = async (req
         return;
     }
     const MessageBroker = await RabbitMq.connect(config.MessageBrokerUri as string);
-    axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.authenticateUser}`,{params:{"token":token}})
+    axios.get(`${config.Microservices.Auth}${config.Routes.AuthService.authenticateUser}`,{params:{"token":token}})
     .then(async() => {
         const customer : Customer | null = await _getUserFromCache(body.apiKey as string)
         if(!customer){
@@ -29,7 +29,7 @@ export const updateNotifications:(req:Request,res:Response) => void = async (req
         }
         const channel:RabbitMq.Channel = await MessageBroker.createChannel();
         await channel.assertExchange(BrokerExchange.NOTIF,Type.DIRECT,{durable:true,internal:false,autoDelete:false})
-        const result = channel.publish(BrokerExchange.NOTIF,RoutingKey.UPDATE,Buffer.from(JSON.stringify({"email":customer?.email,"msgId":body.msgId})))
+        const result = channel.publish(BrokerExchange.NOTIF,RoutingKey.UPDATE_RK,Buffer.from(JSON.stringify({"email":customer?.email,"msgId":body.msgId})))
         if(!result){
             throw new Error("[ERROR]: Consumer rejected request")
         }

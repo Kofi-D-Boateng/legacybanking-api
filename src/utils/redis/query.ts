@@ -40,6 +40,14 @@ export const _getUserFromCache: (keyHash: string) => Promise<Customer | null> = 
   }
 };
 
+export const _getEmailFromCache:(key:string) => Promise<string|Error> = async(key)=>{
+  const email:string|null = await client.GET(key);
+    if(!email){
+      return new Error(`[WARNING]: Email was not found in cache for key: ${key}`)
+    }
+    return email;
+}
+
 export const _updateTransaction: (
   keyHash: string,
   data: TransactionRequest
@@ -82,9 +90,31 @@ export const _getVideoSrcFromCache:(key:string) => Promise<Readable | null> = as
   }
 }
 
+export const _saveBankInfoToCache:(val:Bank) => Promise<void> = async(val) =>{
+  try {
+    if(!config.BankKeyHash || !val){
+      throw new Error("[WARNING]: Missing key or val... Could not save user to cache.")
+    }
+    await client.SET(config.BankKeyHash,JSON.stringify(val))
+  } catch (error:any) {
+    console.log(error["message"])
+  }
+}
+
 export const _saveSrcToCache:(key:string,src:string) => Promise<void> = async (key,src) =>{
   if(!key || !src){
     return;
   }
   await client.SET(key,src);
+}
+
+export const _saveUserToCache:(key:string,value:Customer) => Promise<void> = async(key,val)=>{
+  try {
+    if(!key || !val){
+      throw new Error("[WARNING]: Missing key or val... Could not save user to cache.")
+    }
+    await client.SET(key,JSON.stringify(val))
+  } catch (error:any) {
+    console.log(error["message"])
+  }
 }

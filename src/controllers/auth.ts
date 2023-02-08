@@ -14,24 +14,13 @@ export const loginCustomer:(req:Request,res:Response) => void = (req,res) =>{
     }
 
     axios.post(`${config.Microservices.Auth}${config.Routes.AuthService.loginUser}`,loginRequest).then((response)=>{
+        console.log()
         const returnValue:LoginRequestReturn = response.data;
-        if((!returnValue.authorizationToken || returnValue.authorizationToken.trim().length <= 0) || (!returnValue.apiKey|| returnValue.apiKey.trim().length <= 0)){
-            throw new Error("invalid")
-        }
-
-        res.status(200).json({
-            token:returnValue.authorizationToken,
-            apiKey:returnValue.apiKey,
-            isActivated:returnValue.isActivated,
-            expiresIn: returnValue.tokenExpiration
-        })
+        res.status(response.status).json(returnValue)
 
     }).catch((reason)=>{
-        if(reason["message"] == "invalid"){
-            res.status(401)
-        }else{
-            res.status(500)
-        }
+        console.log(reason["message"]);
+        res.status(reason["response"]["status"]).json("Unauthorized")
     })
 
 }
@@ -52,11 +41,8 @@ export const getRefreshToken:(req:Request,res:Response) => void = (req,res) =>{
         }
         res.status(200).json(returnValue);
     }).catch((reason)=>{
-        if(reason["message"] == "invalid"){
-            res.status(401)
-        }else{
-            res.status(400)
-        }
+        console.log(reason["message"]);
+        res.status(reason["response"]["status"]).json("Unauthorized")
     })
 }
 
@@ -73,7 +59,7 @@ export const logoutCustomer:(req:Request,res:Response) => void = (req,res) =>{
     .then(()=> res.status(200))
     .catch((reason)=> {
         console.log(reason["message"]);
-        res.status(401);
+        res.status(reason["response"]["status"]).json("Unauthorized")
     })
     
 }
@@ -90,7 +76,7 @@ export const confirmCustomerRegistration:(req:Request,res:Response) => void = (r
     .then(()=> res.status(200))
     .catch((reason)=> {
         console.log(reason["message"]);
-        res.status(401);
+        res.status(reason["response"]["status"]).json("Unauthorized")
     })
 }
 
@@ -107,6 +93,6 @@ export const registerCustomer:(req:Request,res:Response) => void = (req,res) =>{
     .then(() => res.status(200))
     .catch((reason)=>{
         console.log(reason["message"]);
-        res.status(401);
+        res.status(reason["response"]["status"]).json("Unauthorized")
     })
 }
