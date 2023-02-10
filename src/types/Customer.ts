@@ -46,12 +46,12 @@ export type Transaction = {
 };
 
 export type Customer = {
-  fName: string;
-  lName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   country: string | undefined;
   area: string | undefined;
-  zipCode: string | undefined;
+  zipcode: string | undefined;
   isActivated: boolean;
   transactions: Transaction[];
   accounts: Account[];

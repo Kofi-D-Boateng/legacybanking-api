@@ -17,7 +17,6 @@ export const getProfile:(req:Request, res:Response) => void = async (req,res) =>
     try {
         const authResponse = await axios.get(`${config.Microservices.Auth}${config.Routes.AuthService.authenticateUser}`,{params:{"token":token}});
         if(authResponse.status != 200){
-            console.log("HIT")
             throw new Error(authResponse.data);
         }
         const customer:Customer | null = await _getUserFromCache(apiKey as string);
@@ -35,17 +34,21 @@ export const getProfile:(req:Request, res:Response) => void = async (req,res) =>
             if(notifResponse.status != 200){
                 throw new Error(notifResponse.data);
             }
-
             const newCustomer:Customer = bankResponse.data;
             newCustomer.notifications = notifResponse.data;
-
             await _saveUserToCache(apiKey as string,newCustomer);
             res.status(200).json(newCustomer);
             return;
         }
         res.status(200).json(customer);
     } catch (error:any) {
-        console.log(error);
-        res.status(400).json("Unauthorized")
+        if(!error["message"]){
+            console.log(error)
+            res.status(401).json("")
+        }else{
+            console.log(error["message"])
+            res.status(error["response"]["status"]).json("")
+        }
+        
     }    
 }

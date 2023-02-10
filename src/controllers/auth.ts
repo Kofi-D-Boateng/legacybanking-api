@@ -14,7 +14,6 @@ export const loginCustomer:(req:Request,res:Response) => void = (req,res) =>{
     }
 
     axios.post(`${config.Microservices.Auth}${config.Routes.AuthService.loginUser}`,loginRequest).then((response)=>{
-        console.log()
         const returnValue:LoginRequestReturn = response.data;
         res.status(response.status).json(returnValue)
 
@@ -27,9 +26,9 @@ export const loginCustomer:(req:Request,res:Response) => void = (req,res) =>{
 
 export const getRefreshToken:(req:Request,res:Response) => void = (req,res) =>{
     const token:string|undefined = req.get("authorization");
-    const apiKey:string|undefined = req.params["apiKey"];
+    const apiKey = req.query["apiKey"];
 
-    if((!token || token.trim().length <= 0) || (!apiKey || apiKey.trim().length <= 0)){
+    if((!token || token.trim().length <= 0) || !apiKey){
         res.status(401)
         return;
     }
@@ -48,15 +47,14 @@ export const getRefreshToken:(req:Request,res:Response) => void = (req,res) =>{
 
 export const logoutCustomer:(req:Request,res:Response) => void = (req,res) =>{
     const token:string|undefined = req.get("authorization");
-    const apiKey:string|undefined = req.body["apiKey"];
-
-    if((!token || token.trim().length <= 0) || (!apiKey || apiKey.trim().length <= 0)){
-        res.status(401)
+    const apiKey = req.query["apiKey"];
+    if((!token || token.trim().length <= 0) || !apiKey){
+        res.status(401).json("Unauthorized")
         return;
     }
 
-    axios.delete(`${config.Microservices.Auth}/${config.Routes.AuthService.logoutUser}`,{headers:{"authorization":token},params:{apiKey:apiKey}})
-    .then(()=> res.status(200))
+    axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.logoutUser}`,{headers:{"authorization":token},params:{apiKey:apiKey}})
+    .then(()=> res.status(200).json(""))
     .catch((reason)=> {
         console.log(reason["message"]);
         res.status(reason["response"]["status"]).json("Unauthorized")

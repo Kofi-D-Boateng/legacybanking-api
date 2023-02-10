@@ -1,27 +1,39 @@
-export enum TransactionType{
-  ONLINE = "ONLINE-TRANSFER",
-  ATM = "ATM-TRANSFER",
-  MOBILE = "MOBILE-TRANSFER",
+import { BankAccountType } from "../enums/BankAccountType";
+import { CardType } from "../enums/CardType";
+
+export enum TransactionEnv{
+  ONLINE = "ONLINE-TRANSACTION",
+  ATM = "ATM-TRANSACTION",
+  MOBILE = "MOBILE-TRANSACTION",
   VENDOR = "VENDOR-TRANSACTION"
 }
 
-type TransactionRequest = {
+export enum TransactionType{
+  REFUND = "REFUND",
+  PURCHASE= "PURCHASE",
+  DEPOSIT = "DEPOSIT",
+  WITHDRAW = "WITHDRAW",
+  TRANSFER = "TRANSFER"
+}
+
+export type TransactionRequest = {
   apiKey: string;
+  accountPin:number;
   accountNumber: string;
-  cardNumber: string;
-  emailOfTransferee: string;
-  dateOfTransaction: string;
-  email: string;
   amount: number;
-  bankAccountType: string;
-  phoneNumberOfTransferee: number;
-  transactionType: TransactionType;
+  bankAccountType: BankAccountType;
+  cardNumber: string;
   cardHolderName: string;
   cardVerificationCode: number;
-  cardType: string;
+  cardType: CardType;
+  dateOfTransaction: string;
+  emailOfTransferee: string;
+  email: string;
   expirationDate: string;
+  location:string;
+  phoneNumberOfTransferee: number;
+  transactionType: TransactionType;
+  transactionEnv: TransactionEnv
   merchantName: string;
   merchantDescription: string;
 };
-
-export default TransactionRequest;

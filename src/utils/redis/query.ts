@@ -2,7 +2,7 @@ import { Readable } from "stream";
 import config from "../../config/config";
 import { Bank } from "../../types/Bank";
 import { Customer } from "../../types/Customer";
-import TransactionRequest from "../../types/TransactionRequest";
+import {TransactionRequest} from "../../types/TransactionRequest";
 import client from "./redis";
 const date = new Date();
 

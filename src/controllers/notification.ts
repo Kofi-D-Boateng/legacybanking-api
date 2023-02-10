@@ -36,8 +36,13 @@ export const updateNotifications:(req:Request,res:Response) => void = async (req
         res.status(200);
     })
     .catch((reason)=>{
-        console.log(reason);
-        res.status(500);
+        if(reason["response"]){
+            console.log(reason["message"])
+            res.status(reason["response"]["status"]).json()
+        }else{
+            console.log(reason)
+            res.status(500).json()
+        }
     })
     .finally(async() => await MessageBroker.close())
 
