@@ -3,6 +3,7 @@ export enum BrokerQueue {
   AUTHENTICATIONRESULT = "authentication-result",
   BILLINGUPDATE = "billing-update",
   FRAUD = "fraud-check",
+  JOINMAILLIST = "join-maillist",
   PROCESSTRANSACTION = "transaction-processing",
   VENDORTRANSACTION = "vendor-transaction",
   ATMTRANSACTION = "atm-transaction",
@@ -18,13 +19,13 @@ export enum BrokerExchange{
 }
 
 export enum RoutingKey{
-  MAILLIST_RK = "mailist",
+  MAILLIST_RK = "maillist",
   CS_RK = "cust-serv",
   UPDATE_RK = "update",
   ATM_RK = "atm",
   VENDOR_RK = "vendor",
   ACCOUNT_RK = "account",
-  SECURITY_RK = "security"
+  SECURITY_RK = "update-customer-security"
 }
 
 export enum Type {

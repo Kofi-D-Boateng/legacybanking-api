@@ -17,12 +17,12 @@ export class ATMTransactionRequest{
     constructor(request:TransactionRequest) {
         this.cardNumber = request.cardNumber;
         this.cardVerificationCode = request.cardVerificationCode;
-        this.expirationDate = request.expirationDate;
+        this.expirationDate = request.expirationDate ? request.expirationDate : new Date().toISOString();
         this.type = request.cardType
         this.accountPin = request.accountPin;
         this.amount = request.amount;
         this.transactionType = request.transactionType;
-        this.dateOfTransaction = request.dateOfTransaction;
+        this.dateOfTransaction = request.dateOfTransaction ? request.dateOfTransaction : new Date().toISOString();
         this.location = request.location;
     }
 }

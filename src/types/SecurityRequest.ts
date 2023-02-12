@@ -1,5 +1,5 @@
 type SecurityRequest = {
-  token: string;
+  apiKey: string;
   accountNumber: string;
   cardNumber: string;
   requestType: string;

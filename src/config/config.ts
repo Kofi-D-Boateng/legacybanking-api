@@ -37,12 +37,15 @@ const config = {
       getProfile:"/customer/profile"
     },
     Security:{
-      updateSecurity:"/security/update-user-security"
+      updateSecurity:"/security/update-customer-security"
     },
     NotificationService:{
       getNotifications:"/notifications",
       updateNotification:"/notifications/update-notification"
     },
+    Mailist:{
+      joinMailList:"/mail-list/add-to-maillist"
+    }
   },
 
   Microservices:{

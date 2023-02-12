@@ -4,24 +4,25 @@ import axios from "axios"
 import * as RabbitMq from "amqplib"
 import { Response, Request } from "express";
 import config from "../config/config";
-import {BrokerExchange, RoutingKey, Type} from "../enums/Amqp";
+import {BrokerExchange, BrokerQueue, RoutingKey, Type} from "../enums/Amqp";
 import { _getUserFromCache } from "../utils/redis/query";
 import { Customer } from "../types/Customer";
+import broker from "../models/MessageBrokerSingleton";
 
 
 
 export const updateNotifications:(req:Request,res:Response) => void = async (req,res) =>{
     const token:string | undefined = req.get("authorization")
     const body:{msgId:string | undefined, apiKey:string | undefined} = req.body;
-
     if(!token || !body.msgId || !body.apiKey){
-        res.status(401)
+        res.status(401).json("")
         return;
     }
-    const MessageBroker = await RabbitMq.connect(config.MessageBrokerUri as string);
+    const MessageBroker = await broker.getBroker()
     axios.get(`${config.Microservices.Auth}${config.Routes.AuthService.authenticateUser}`,{params:{"token":token}})
     .then(async() => {
         const customer : Customer | null = await _getUserFromCache(body.apiKey as string)
+        console.log(customer != null)
         if(!customer){
             throw new Error(
                 `[ERROR]: Customer for key: ${body.apiKey} does not exist`
@@ -29,11 +30,14 @@ export const updateNotifications:(req:Request,res:Response) => void = async (req
         }
         const channel:RabbitMq.Channel = await MessageBroker.createChannel();
         await channel.assertExchange(BrokerExchange.NOTIF,Type.DIRECT,{durable:true,internal:false,autoDelete:false})
-        const result = channel.publish(BrokerExchange.NOTIF,RoutingKey.UPDATE_RK,Buffer.from(JSON.stringify({"email":customer?.email,"msgId":body.msgId})))
+        await channel.assertQueue(BrokerQueue.UPDATENOTIFICATION,{durable:true,exclusive:false,autoDelete:false})
+        const request:{email:string, msgId:string|undefined, apiKey:string|undefined} = {"email":customer?.email,"msgId":body!.msgId, "apiKey":body!.apiKey}
+        const result = channel.publish(BrokerExchange.NOTIF,RoutingKey.UPDATE_RK,Buffer.from(JSON.stringify(request)))
+        console.log(result)
         if(!result){
             throw new Error("[ERROR]: Consumer rejected request")
         }
-        res.status(200);
+        res.status(200).json("");
     })
     .catch((reason)=>{
         if(reason["response"]){
@@ -44,9 +48,6 @@ export const updateNotifications:(req:Request,res:Response) => void = async (req
             res.status(500).json()
         }
     })
-    .finally(async() => await MessageBroker.close())
-
-
 }
 
 export const getNewVerificationLink:(req:Request,res:Response) => void = (req,res) =>{

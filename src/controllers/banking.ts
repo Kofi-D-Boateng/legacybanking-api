@@ -6,10 +6,11 @@ import { Bank } from "../types/Bank";
 import{TransactionRequest,TransactionEnv } from "../types/TransactionRequest";
 import { _getBankInfoFromCache, _saveBankInfoToCache } from "../utils/redis/query";
 import config from "../config/config";
-import {BrokerExchange,RoutingKey} from "../enums/Amqp";
+import {BrokerExchange,RoutingKey, Type} from "../enums/Amqp";
 import { AccountTransferRequest } from "../models/AccountTransferRequest";
 import { ATMTransactionRequest } from "../models/ATMTransactionRequest";
 import { VendorTransactionRequest } from "../models/VendorTransactionRequest";
+import broker from "../models/MessageBrokerSingleton";
 
 export const processTransaction:(req:Request, res:Response) => void = async (req,res) =>{
     const token:string | undefined = req.get("authorization");
@@ -17,6 +18,7 @@ export const processTransaction:(req:Request, res:Response) => void = async (req
     console.log(transactionRequest)
     if(transactionRequest.transactionEnv == TransactionEnv.ATM){
         const request:ATMTransactionRequest = new ATMTransactionRequest(transactionRequest)
+        console.log(request)
         const result = await atmTransaction(request);
         if(result){
             res.status(200).json()
@@ -67,30 +69,29 @@ export const getBankInfo:(req:Request, res:Response) => void = async (req,res) =
 }
 
 const atmTransaction:(request:ATMTransactionRequest) => Promise<boolean> = async (request) =>{
-    const MessageBroker:RabbitMq.Connection = await RabbitMq.connect(config.MessageBrokerUri as string);
+  const MessageBroker = await broker.getBroker()
     const channel:RabbitMq.Channel = await MessageBroker.createChannel();
-    await channel.assertExchange(BrokerExchange.BANKING,"direct",{durable:true,internal:false,autoDelete:false})
+    await channel.assertExchange(BrokerExchange.BANKING,Type.DIRECT,{durable:true,internal:false,autoDelete:false})
     return channel.publish(BrokerExchange.BANKING,RoutingKey.ATM_RK,Buffer.from(JSON.stringify(request)))
 }
 const vendorTransaction:(request:VendorTransactionRequest) => Promise<boolean> = async(request) =>{
-    const MessageBroker:RabbitMq.Connection = await RabbitMq.connect(config.MessageBrokerUri as string);
+  const MessageBroker = await broker.getBroker()
     const channel:RabbitMq.Channel = await MessageBroker.createChannel();
-    await channel.assertExchange(BrokerExchange.BANKING,"direct",{durable:true,internal:false,autoDelete:false})
+    await channel.assertExchange(BrokerExchange.BANKING,Type.DIRECT,{durable:true,internal:false,autoDelete:false})
     return channel.publish(BrokerExchange.BANKING,RoutingKey.VENDOR_RK,Buffer.from(JSON.stringify(request)))
 }
 const onlineTransaction:(request:AccountTransferRequest,token:string) => Promise<boolean> = async(request,token) =>{
-    const MessageBroker:RabbitMq.Connection = await RabbitMq.connect(config.MessageBrokerUri as string);
+  const MessageBroker = await broker.getBroker()
     try {
         const response = await axios.get(`${config.Microservices.Auth}/${config.Routes.AuthService.authenticateUser}`,{params:{"token":token}})
         if(response.status != 200){
             throw new Error(response.data)
         }
         const channel:RabbitMq.Channel = await MessageBroker.createChannel();
-        await channel.assertExchange(BrokerExchange.BANKING,"direct",{durable:true,internal:false,autoDelete:false})
+        await channel.assertExchange(BrokerExchange.BANKING,Type.DIRECT,{durable:true,internal:false,autoDelete:false})
         return channel.publish(BrokerExchange.BANKING,RoutingKey.ACCOUNT_RK,Buffer.from(JSON.stringify(request)))
     } catch (error:any) {
         console.log(error["message"])
-        MessageBroker.close()
         return false;
     }
 }

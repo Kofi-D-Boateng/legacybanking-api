@@ -7,6 +7,7 @@ import { getProfile } from "../controllers/customer";
 import { updateNotifications,getNewVerificationLink } from "../controllers/notification";
 import { updateCustomerSecurity } from "../controllers/security";
 import { getBankInfo, processTransaction } from "../controllers/banking";
+import { joinMailList } from "../controllers/maillist";
 
 const options:RouterOptions = {
     strict:false,
@@ -28,6 +29,8 @@ router.get(config.Routes.AuthService.getNewVerificationLink,getNewVerificationLi
 router.post(config.Routes.AuthService.loginUser,loginCustomer)
 
 router.post(config.Routes.AuthService.confirmCustomerRegistration,confirmCustomerRegistration)
+
+router.put(config.Routes.Mailist.joinMailList,joinMailList)
 
 router.put(config.Routes.NotificationService.updateNotification,updateNotifications)
 
