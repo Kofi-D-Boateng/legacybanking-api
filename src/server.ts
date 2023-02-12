@@ -2,12 +2,6 @@ import "dotenv/config";
 import express, { Express } from "express";
 import logger from "morgan";
 import config from "./config/config";
-import {
-  _clearUserFromRedisCache,
-  _getBankInfo,
-  _getUser,
-  _updateTransaction,
-} from "./utils/redis/query";
 import apiRouter from "./routes/handlers"
 const app: Express = express();
 
