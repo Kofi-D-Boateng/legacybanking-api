@@ -14,9 +14,14 @@ class MessageBrokerSingleton{
 
     async getBroker():Promise<RQ.Connection>{
         if(!MessageBrokerSingleton.broker){
-            console.log("CREATED")
-            MessageBrokerSingleton.broker = await RQ.connect(config.MessageBrokerUri as string)
-            return MessageBrokerSingleton.broker
+            try {
+                console.log("[IN PROGRESS]: Initiating broker....")
+                MessageBrokerSingleton.broker = await RQ.connect(config.MessageBrokerUri as string)
+                console.log("[COMPLETED]: Broker initiated....")
+                return MessageBrokerSingleton.broker
+            } catch (error:any) {
+                console.log(error["message"])
+            }
         }
         return MessageBrokerSingleton.broker
     }

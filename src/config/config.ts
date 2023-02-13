@@ -41,10 +41,28 @@ const config = {
     },
     NotificationService:{
       getNotifications:"/notifications",
-      updateNotification:"/notifications/update-notification"
+      updateNotification:"/notifications/update-notification",
+      updateBilling:"notifications/billing"
     },
     Mailist:{
       joinMailList:"/mail-list/add-to-maillist"
+    },
+    Frontend:{
+      AWS:"/s3/get-video",
+      Bank:"/bank/info",
+      Billing:"/customer/billing",
+      CustomerService:"/contact/customer-service",
+      Login:"/customer/login",
+      Logout:"/customer/logout",
+      Maillist:"/maillist/join",
+      Profile:"/customer/profile",
+      ProfileSecurity:"/customer/security",
+      RefreshToken:"/refresh-token",
+      Registration:"/admin/customer/registration",
+      Transaction:"/transactions/process-transaction",
+      VerifyAccount:"/verify/account",
+      VerificationLink:"/link/new-link",
+      UpdateNotification:"/notifications/update"
     }
   },
 

@@ -8,6 +8,7 @@ import { updateNotifications,getNewVerificationLink } from "../controllers/notif
 import { updateCustomerSecurity } from "../controllers/security";
 import { getBankInfo, processTransaction } from "../controllers/banking";
 import { joinMailList } from "../controllers/maillist";
+import { contactCustomerService } from "../controllers/customerService";
 
 const options:RouterOptions = {
     strict:false,
@@ -16,30 +17,32 @@ const options:RouterOptions = {
 
 const router:Router = Router(options);
 
-router.get(config.Routes.AWS.retrieveVideo,s3Bucket)
+router.get(config.Routes.Frontend.AWS,s3Bucket)
 
-router.get(config.Routes.BankingService.getBankInfo,getBankInfo)
+router.get(config.Routes.Frontend.Bank,getBankInfo)
 
-router.get(config.Routes.Customer.getProfile,getProfile);
+router.get(config.Routes.Frontend.Profile,getProfile);
 
-router.get(config.Routes.AuthService.getRefreshToken,getRefreshToken)
+router.get(config.Routes.Frontend.RefreshToken,getRefreshToken)
 
-router.get(config.Routes.AuthService.getNewVerificationLink,getNewVerificationLink)
+router.get(config.Routes.Frontend.VerificationLink,getNewVerificationLink)
 
-router.post(config.Routes.AuthService.loginUser,loginCustomer)
+router.post(config.Routes.Frontend.Login,loginCustomer)
 
-router.post(config.Routes.AuthService.confirmCustomerRegistration,confirmCustomerRegistration)
+router.post(config.Routes.Frontend.VerifyAccount,confirmCustomerRegistration)
 
-router.put(config.Routes.Mailist.joinMailList,joinMailList)
+router.put(config.Routes.Frontend.Maillist,joinMailList)
 
-router.put(config.Routes.NotificationService.updateNotification,updateNotifications)
+router.put(config.Routes.Frontend.UpdateNotification,updateNotifications)
 
-router.put(config.Routes.BankingService.processTransaction,processTransaction)
+router.put(config.Routes.Frontend.Transaction,processTransaction)
 
-router.put(config.Routes.AuthService.registerCustomer,registerCustomer)
+router.put(config.Routes.Frontend.Registration,registerCustomer)
 
-router.put(config.Routes.Security.updateSecurity,updateCustomerSecurity)
+router.put(config.Routes.Frontend.ProfileSecurity,updateCustomerSecurity)
 
-router.delete(config.Routes.AuthService.logoutUser,logoutCustomer)
+router.put(config.Routes.Frontend.CustomerService,contactCustomerService)
+
+router.delete(config.Routes.Frontend.Logout,logoutCustomer)
 
 export default router;

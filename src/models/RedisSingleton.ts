@@ -16,11 +16,15 @@ class RedisSingleton{
 
     async getClient():Promise<redis.RedisClientType>{
         if(!RedisSingleton.client){
-            console.log("Creating Redis Client....");
-            RedisSingleton.client = redis.createClient({ url: uri });
-            RedisSingleton.client.connect();
-            console.log("Redis Client connected....")
-            return RedisSingleton.client;
+            try {
+                console.log("Creating Redis Client....");
+                RedisSingleton.client = redis.createClient({ url: uri });
+                RedisSingleton.client.connect();
+                console.log("Redis Client connected....") 
+                return RedisSingleton.client;  
+            } catch (error:any) {
+                console.log(error["message"])
+            }
         }
         return RedisSingleton.client;
     }
