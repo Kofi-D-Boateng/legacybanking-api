@@ -25,7 +25,8 @@ export enum RoutingKey{
   ATM_RK = "atm",
   VENDOR_RK = "vendor",
   ACCOUNT_RK = "account",
-  SECURITY_RK = "update-customer-security"
+  SECURITY_RK = "security",
+  BILLING_RK = "billing"
 }
 
 export enum Type {
