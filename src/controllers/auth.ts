@@ -23,7 +23,7 @@ export const loginCustomer: (req: Request, res: Response) => void = (
 
   axios
     .post(
-      `${config.Microservices.Auth}${config.Routes.AuthService.loginUser}`,
+      `${config.Microservices.Auth}/${config.Routes.AuthService.loginUser}`,
       loginRequest
     )
     .then((response) => {
