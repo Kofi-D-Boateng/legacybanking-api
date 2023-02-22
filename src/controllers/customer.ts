@@ -23,7 +23,7 @@ export const getProfile: (req: Request, res: Response) => void = async (
   }
   try {
     const authResponse = await axios.get(
-      `${config.Microservices.Auth}${config.Routes.AuthService.authenticateUser}`,
+      `${config.Microservices.Auth}/${config.Routes.AuthService.authenticateUser}`,
       { params: { token: token } }
     );
     if (authResponse.status != 200) {
@@ -36,7 +36,7 @@ export const getProfile: (req: Request, res: Response) => void = async (
         throw returnedEmailValue;
       }
       const bankResponse = await axios.get(
-        `${config.Microservices.Bank}${config.Routes.BankingService.getFullCustomerInfo}`,
+        `${config.Microservices.Bank}/${config.Routes.BankingService.getFullCustomerInfo}`,
         { params: { username: returnedEmailValue } }
       );
       if (bankResponse.status != 200) {
@@ -44,7 +44,7 @@ export const getProfile: (req: Request, res: Response) => void = async (
       }
 
       const notifResponse = await axios.get(
-        `${config.Microservices.Notifications}${config.Routes.NotificationService.getNotifications}`,
+        `${config.Microservices.Notifications}/${config.Routes.NotificationService.getNotifications}`,
         { params: { email: returnedEmailValue } }
       );
       if (notifResponse.status != 200) {
