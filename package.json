@@ -1,6 +1,6 @@
 {
   "name": "legacy-api",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "The main api for the legacy banking microservice stack",
   "main": "server.js",
   "scripts": {

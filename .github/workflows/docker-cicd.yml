@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x,17.x,16.x]
+        node-version: [18.x, 17.x, 16.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -28,7 +28,7 @@ jobs:
         uses: mr-smithers-excellent/docker-build-push@v5
         with:
           image: kdboateng/lb-api
-          tags: 1.0.2, latest
+          tags: 1.0.3, latest
           registry: docker.io
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
