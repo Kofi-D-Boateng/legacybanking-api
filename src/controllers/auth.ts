@@ -41,7 +41,9 @@ export const getRefreshToken: (req: Request, res: Response) => void = (
   res
 ) => {
   const token: string | undefined = req.get("authorization");
-  const apiKey = req.params["apiKey"];
+  const apiKey = req.params["apiKey"]
+    ? req.params["apiKey"]
+    : req.query["apiKey"];
 
   if (!token || token.trim().length <= 0 || !apiKey) {
     res.status(401);

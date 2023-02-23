@@ -13,7 +13,9 @@ export const getNewVerificationLink: (req: Request, res: Response) => void = (
   req,
   res
 ) => {
-  const email: string | undefined = req.params["email"];
+  const email: string | undefined = req.params["email"]
+    ? req.params["email"]
+    : (req.query["email"] as string | undefined);
 
   if (!email || email.trim().length <= 0) {
     res.status(401).json();

@@ -9,8 +9,10 @@ export const s3Bucket: (req: Request, res: Response) => void = async (
   req,
   res
 ) => {
-  const videoName = req.params["key"];
-  if (!videoName || videoName.trim().length <= 0) {
+  const videoName = req.params["key"]
+    ? req.params["key"]
+    : (req.query["key"] as string);
+  if (!videoName || videoName!.trim().length <= 0) {
     console.log("[ERROR]: Video tags not being sent from frontend....");
     res.status(400);
     return;
