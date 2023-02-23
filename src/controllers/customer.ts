@@ -15,7 +15,9 @@ export const getProfile: (req: Request, res: Response) => void = async (
   res
 ) => {
   const token: string | undefined = req.get("authorization");
-  const apiKey = req.params["apiKey"];
+  const apiKey = req.params["apiKey"]
+    ? req.params["apiKey"]
+    : req.query["apiKey"];
 
   if (!token || !apiKey) {
     res.status(401).json("Unauthorized");
