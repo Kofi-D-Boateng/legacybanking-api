@@ -1,33 +1,29 @@
-
-import * as RQ from "amqplib"
+import * as RQ from "amqplib";
 import config from "../config/config";
 
-class MessageBrokerSingleton{
-    static instance:MessageBrokerSingleton;
-    static broker:RQ.Connection
+export class MessageBrokerSingleton {
+  private static instance: MessageBrokerSingleton;
+  private static broker: RQ.Connection;
 
-    constructor(){
-        if(MessageBrokerSingleton.instance == null){
-            MessageBrokerSingleton.instance = this;
-        }
+  constructor() {
+    if (MessageBrokerSingleton.instance == null) {
+      MessageBrokerSingleton.instance = this;
+      console.log("[IN PROGRESS]: Connecting to MessageBroker....");
+      RQ.connect(config.MessageBrokerUri as string)
+        .then((connection) => {
+          console.log("[COMPLETE]: Connected to MessageBroker....");
+          MessageBrokerSingleton.broker = connection;
+        })
+        .catch((err) =>
+          console.log(`[ERROR]: could not connect to Rabbit MQ --> ${err}`)
+        );
     }
+  }
 
-    async getBroker():Promise<RQ.Connection>{
-        if(!MessageBrokerSingleton.broker){
-            try {
-                console.log("[IN PROGRESS]: Initiating broker....")
-                MessageBrokerSingleton.broker = await RQ.connect(config.MessageBrokerUri as string)
-                console.log("[COMPLETED]: Broker initiated....")
-                return MessageBrokerSingleton.broker
-            } catch (error:any) {
-                console.log(error["message"])
-            }
-        }
-        return MessageBrokerSingleton.broker
+  public static getBroker(): RQ.Connection {
+    if (!MessageBrokerSingleton.instance) {
+      MessageBrokerSingleton.instance = new MessageBrokerSingleton();
     }
+    return MessageBrokerSingleton.broker;
+  }
 }
-
-
-const broker = new MessageBrokerSingleton();
-Object.freeze(broker);
-export default broker;

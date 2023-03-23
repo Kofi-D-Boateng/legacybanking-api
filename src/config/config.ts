@@ -14,6 +14,12 @@ const config = {
       accessKey: process.env.AWS_ACCESS_KEY,
       secretAccessKey: process.env.AWS_SECRET_KEY,
     },
+    Lambda: {
+      functionNames: process.env.FUNCTION_NAMES?.split(","),
+      region: process.env.REGIONS?.split(","),
+      accessKey: process.env.AWS_ACCESS_KEY,
+      secretAccessKey: process.env.AWS_SECRET_KEY,
+    },
   },
   Routes: {
     AuthService: {
@@ -29,6 +35,8 @@ const config = {
       getBankInfo: "bank/info",
       getFullCustomerInfo: "customer/profile",
       processTransaction: "transactions/process-transaction",
+      generateNewVerificationLink: "generate-new-verification-link",
+      registerCustomer: "register-customer",
     },
     Customer: {
       getProfile: "customer/profile",

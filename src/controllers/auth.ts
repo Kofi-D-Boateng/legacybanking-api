@@ -1,9 +1,25 @@
 "use strict";
 import { Response, Request } from "express";
 import axios from "axios";
-import { LoginRequest, LoginRequestReturn } from "../types/LoginRequest";
+import { LoginRequest } from "../types/LoginRequest";
 import config from "../config/config";
 import { Registration } from "../types/Registration";
+import AWS from "aws-sdk";
+import {
+  _clearUserFromRedisCache,
+  _getUserFromCache,
+  _saveUserToCache,
+} from "../utils/redis/query";
+
+AWS.config.update({
+  region: config.AWS.Lambda.region ? config.AWS.Lambda.region[0] : "",
+  credentials: {
+    accessKeyId: config.AWS.Lambda?.accessKey as string,
+    secretAccessKey: config.AWS.Lambda?.secretAccessKey as string,
+  },
+});
+
+const lambda = new AWS.Lambda();
 
 export const loginCustomer: (req: Request, res: Response) => void = (
   req,
@@ -21,18 +37,20 @@ export const loginCustomer: (req: Request, res: Response) => void = (
     return;
   }
 
-  axios
-    .post(
-      `${config.Microservices.Auth}/${config.Routes.AuthService.loginUser}`,
-      loginRequest
-    )
-    .then((response) => {
-      const returnValue: LoginRequestReturn = response.data;
-      res.status(response.status).json(returnValue);
+  lambda
+    .invoke({
+      FunctionName: config.AWS.Lambda.functionNames?.at(0) as string,
+      InvocationType: "RequestResponse",
+      Payload: JSON.stringify({ Function: "loginUser", Payload: loginRequest }),
     })
-    .catch((reason) => {
-      console.log(reason["message"]);
-      res.status(reason["response"]["status"]).json("Unauthorized");
+    .promise()
+    .then((response) => {
+      const returnedObject = JSON.parse(response.Payload?.toString() as string);
+      res.status(200).json(returnedObject["body"]);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(401).json("");
     });
 };
 
@@ -50,21 +68,30 @@ export const getRefreshToken: (req: Request, res: Response) => void = (
     return;
   }
 
-  axios
-    .get(
-      `${config.Microservices.Auth}/${config.Routes.AuthService.getRefreshToken}`,
-      { headers: { authorization: token }, params: { apiKey: apiKey } }
-    )
-    .then((response) => {
-      const returnValue: { token: string; expiresIn: number } = response.data;
-      if (!returnValue.token || returnValue.token.trim().length <= 0) {
-        throw new Error("invalid");
-      }
-      res.status(200).json(returnValue);
+  const customer = _getUserFromCache(apiKey as string);
+
+  if (!customer) {
+    res.status(401).json("");
+    return;
+  }
+
+  lambda
+    .invoke({
+      FunctionName: config.AWS.Lambda.functionNames?.at(0) as string,
+      InvocationType: "RequestResponse",
+      Payload: JSON.stringify({
+        Function: "getRefreshToken",
+        Payload: token,
+      }),
     })
-    .catch((reason) => {
-      console.log(reason["message"]);
-      res.status(reason["response"]["status"]).json("Unauthorized");
+    .promise()
+    .then((response) => {
+      const returnedObject = JSON.parse(response.Payload?.toString() as string);
+      res.status(200).json(returnedObject["body"]);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(401).json("");
     });
 };
 
@@ -79,15 +106,20 @@ export const logoutCustomer: (req: Request, res: Response) => void = (
     return;
   }
 
-  axios
-    .get(
-      `${config.Microservices.Auth}/${config.Routes.AuthService.logoutUser}`,
-      { headers: { authorization: token }, params: { apiKey: apiKey } }
-    )
-    .then(() => res.status(200).json(""))
+  lambda
+    .invoke({
+      FunctionName: config.AWS.Lambda.functionNames?.at(0) as string,
+      InvocationType: "RequestResponse",
+      Payload: JSON.stringify({ Function: "authenticateUser", Payload: token }),
+    })
+    .promise()
+    .then(() => {
+      _clearUserFromRedisCache(token);
+      res.status(200).json("");
+    })
     .catch((reason) => {
       console.log(reason["message"]);
-      res.status(reason["response"]["status"]).json("Unauthorized");
+      res.status(401).json("Unauthorized");
     });
 };
 
@@ -102,15 +134,17 @@ export const confirmCustomerRegistration: (
     return;
   }
 
-  axios
-    .post(
-      `${config.Microservices.Auth}/${config.Routes.AuthService.confirmCustomerRegistration}`,
-      { token: token }
-    )
-    .then(() => res.status(200))
+  lambda
+    .invoke({
+      FunctionName: config.AWS.Lambda.functionNames?.at(0) as string,
+      InvocationType: "RequestResponse",
+      Payload: JSON.stringify({ Function: "confirmUser", Payload: token }),
+    })
+    .promise()
+    .then(() => res.status(200).json(""))
     .catch((reason) => {
       console.log(reason["message"]);
-      res.status(reason["response"]["status"]).json("Unauthorized");
+      res.status(401).json("Unauthorized");
     });
 };
 
@@ -133,9 +167,8 @@ export const registerCustomer: (req: Request, res: Response) => void = (
 
   axios
     .post(
-      `${config.Microservices.Auth}/${config.Routes.AuthService.registerCustomer}`,
-      registrationRequest,
-      { headers: { authorization: authToken } }
+      `${config.Microservices.Bank}/${config.Routes.BankingService.registerCustomer}`,
+      registrationRequest
     )
     .then(() => res.status(200))
     .catch((reason) => {

@@ -1,6 +1,7 @@
 "use strict";
 import axios from "axios";
 import * as RabbitMq from "amqplib";
+import AWS from "aws-sdk";
 import { Request, Response } from "express";
 import { Bank } from "../types/Bank";
 import {
@@ -16,7 +17,19 @@ import { BrokerExchange, RoutingKey, Type } from "../enums/Amqp";
 import { AccountTransferRequest } from "../models/AccountTransferRequest";
 import { ATMTransactionRequest } from "../models/ATMTransactionRequest";
 import { VendorTransactionRequest } from "../models/VendorTransactionRequest";
-import broker from "../models/MessageBrokerSingleton";
+import { MessageBrokerSingleton } from "../models/MessageBrokerSingleton";
+
+AWS.config.update({
+  region: config.AWS.Lambda.region ? config.AWS.Lambda.region[0] : "",
+  credentials: {
+    accessKeyId: config.AWS.Lambda?.accessKey as string,
+    secretAccessKey: config.AWS.Lambda?.secretAccessKey as string,
+  },
+});
+
+const lambda = new AWS.Lambda();
+
+const MessageBroker = MessageBrokerSingleton.getBroker();
 
 export const processTransaction: (req: Request, res: Response) => void = async (
   req,
@@ -54,10 +67,27 @@ export const processTransaction: (req: Request, res: Response) => void = async (
       res.status(401).json("Unauthorized");
       return;
     }
+
+    const lambdaResponse = await lambda
+      .invoke({
+        FunctionName: config.AWS.Lambda.functionNames?.at(0) as string,
+        InvocationType: "RequestResponse",
+        Payload: JSON.stringify({
+          Function: "authenticateUser",
+          Payload: token,
+        }),
+      })
+      .promise();
+    const authStatus = JSON.parse(lambdaResponse.Payload?.toString() as string);
+    if (lambdaResponse.StatusCode != 200 || authStatus["status"] == 401) {
+      res.status(authStatus["status"] || lambdaResponse.StatusCode).json("");
+      return;
+    }
+
     const request: AccountTransferRequest = new AccountTransferRequest(
       transactionRequest
     );
-    const result = await onlineTransaction(request, token);
+    const result = await onlineTransaction(request);
     if (result) {
       res.status(200).json();
       return;
@@ -72,7 +102,6 @@ export const getBankInfo: (req: Request, res: Response) => void = async (
   res
 ) => {
   const Bank: Bank | null = await _getBankInfoFromCache();
-
   if (!Bank) {
     axios
       .get(
@@ -96,7 +125,6 @@ export const getBankInfo: (req: Request, res: Response) => void = async (
 const atmTransaction: (
   request: ATMTransactionRequest
 ) => Promise<boolean> = async (request) => {
-  const MessageBroker = await broker.getBroker();
   const channel: RabbitMq.Channel = await MessageBroker.createChannel();
   await channel.assertExchange(BrokerExchange.BANKING, Type.DIRECT, {
     durable: true,
@@ -112,7 +140,6 @@ const atmTransaction: (
 const vendorTransaction: (
   request: VendorTransactionRequest
 ) => Promise<boolean> = async (request) => {
-  const MessageBroker = await broker.getBroker();
   const channel: RabbitMq.Channel = await MessageBroker.createChannel();
   await channel.assertExchange(BrokerExchange.BANKING, Type.DIRECT, {
     durable: true,
@@ -126,18 +153,9 @@ const vendorTransaction: (
   );
 };
 const onlineTransaction: (
-  request: AccountTransferRequest,
-  token: string
-) => Promise<boolean> = async (request, token) => {
-  const MessageBroker = await broker.getBroker();
+  request: AccountTransferRequest
+) => Promise<boolean> = async (request) => {
   try {
-    const response = await axios.get(
-      `${config.Microservices.Auth}/${config.Routes.AuthService.authenticateUser}`,
-      { params: { token: token } }
-    );
-    if (response.status != 200) {
-      throw new Error(response.data);
-    }
     const channel: RabbitMq.Channel = await MessageBroker.createChannel();
     await channel.assertExchange(BrokerExchange.BANKING, Type.DIRECT, {
       durable: true,
