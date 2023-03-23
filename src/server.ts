@@ -2,11 +2,11 @@ import "dotenv/config";
 import express, { Express } from "express";
 import logger from "morgan";
 import config from "./config/config";
-import apiRouter from "./routes/handlers"
+import apiRouter from "./routes/handlers";
 const app: Express = express();
 
 const whitelist = {
-  origin: [`${process.env.ALLOWED_ORIGINS}`],
+  origin: process.env.ALLOWED_ORIGINS?.split(","),
   credentials: true,
   optionsSuccessStatus: 204,
   methods: ["GET,POST,PUT,DELETE"],
@@ -15,17 +15,17 @@ const whitelist = {
   ],
 };
 
-app.use((req,res,next)=>{
-  res.header("Access-Control-Allow-Origin",whitelist.origin);
-  res.header("Access-Control-Allow-Methods",whitelist.methods);
-  res.header("Access-Control-Allow-Headers",whitelist.allowedHeaders);
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", whitelist.origin);
+  res.header("Access-Control-Allow-Methods", whitelist.methods);
+  res.header("Access-Control-Allow-Headers", whitelist.allowedHeaders);
 
   next();
-})
+});
 app.use(logger(config.LogginType as string));
 app.use(express.json());
 
-app.use(`/${config.ApiVersion}`,apiRouter)
+app.use(`/${config.ApiVersion}`, apiRouter);
 
 app.listen(config.Port, () =>
   console.log(`Api server listening currently @ port:${config.Port}`)

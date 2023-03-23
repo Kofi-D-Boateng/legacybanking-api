@@ -1,14 +1,14 @@
 import { Readable } from "stream";
 import config from "../../config/config";
 import { Bank } from "../../types/Bank";
-import { Customer } from "../../types/Customer";
-import {TransactionRequest} from "../../types/TransactionRequest";
-import clientInstance from "../../models/RedisSingleton"
+import { TransactionRequest } from "../../types/TransactionRequest";
+import { Customer, Notification } from "../../models/Customer";
+import { RedisSingleton } from "../../models/RedisSingleton";
 const date = new Date();
+const client = RedisSingleton.getClient();
 
 export const _getBankInfoFromCache: () => Promise<Bank | null> = async () => {
   try {
-    const client = await clientInstance.getClient();
     const stringifiedObject: string | null = await client.GET(
       config.BankKeyHash as string
     );
@@ -24,11 +24,10 @@ export const _getBankInfoFromCache: () => Promise<Bank | null> = async () => {
   }
 };
 
-export const _getUserFromCache: (keyHash: string) => Promise<Customer | null> = async (
-  keyHash
-) => {
+export const _getUserFromCache: (
+  keyHash: string
+) => Promise<Customer | null> = async (keyHash) => {
   try {
-    const client = await clientInstance.getClient();
     const stringifiedObject: string | null = await client.GET(keyHash);
     if (!stringifiedObject) {
       throw new Error(
@@ -42,21 +41,88 @@ export const _getUserFromCache: (keyHash: string) => Promise<Customer | null> = 
   }
 };
 
-export const _getEmailFromCache:(key:string) => Promise<string|Error> = async(key)=>{
-  const client = await clientInstance.getClient();
-  const email:string|null = await client.GET(key);
-    if(!email){
-      return new Error(`[WARNING]: Email was not found in cache for key: ${key}`)
+export const _getEmailFromCache: (
+  key: string
+) => Promise<string | Error> = async (key) => {
+  const email: string | null = await client.GET(key);
+  if (!email) {
+    return new Error(`[WARNING]: Email was not found in cache for key: ${key}`);
+  }
+  return email;
+};
+
+export const _clearUserFromRedisCache: (keyHash: string) => void = async (
+  keyHash
+) => {
+  await client.DEL(keyHash);
+};
+
+export const _getVideoSrcFromCache: (
+  key: string
+) => Promise<Readable | null> = async (key) => {
+  try {
+    const src = await client.GET(key);
+    if (!src) {
+      throw new Error(`[WARNING]: value for key: ${key} does not exist...`);
     }
-    return email;
-}
+
+    const buffer = Buffer.from(src, "binary");
+    const readableStream = new Readable();
+    readableStream.push(buffer);
+    readableStream.push(null);
+    return readableStream;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+export const _saveBankInfoToCache: (val: Bank) => Promise<void> = async (
+  val
+) => {
+  try {
+    if (!config.BankKeyHash || !val) {
+      throw new Error(
+        "[WARNING]: Missing key or val... Could not save user to cache."
+      );
+    }
+    await client.SET(config.BankKeyHash, JSON.stringify(val));
+  } catch (error: any) {
+    console.log(error["message"]);
+  }
+};
+
+export const _saveSrcToCache: (
+  key: string,
+  src: string
+) => Promise<void> = async (key, src) => {
+  if (!key || !src) {
+    return;
+  }
+  await client.SET(key, src);
+};
+
+export const _saveUserToCache: (
+  key: string,
+  value: Customer
+) => Promise<void> = async (key, val) => {
+  try {
+    if (!key || !val) {
+      throw new Error(
+        "[WARNING]: Missing key or val... Could not save user to cache."
+      );
+    }
+    await client.SET(key, JSON.stringify(val));
+  } catch (error: any) {
+    console.log(error["message"]);
+  }
+};
 
 export const _updateTransaction: (
   keyHash: string,
   data: TransactionRequest
 ) => void = async (keyHash, data) => {
   try {
-    const client = await clientInstance.getClient();
     const stringifiedObject: string | null = await client.GET(keyHash);
     if (!stringifiedObject) {
       throw new Error(
@@ -69,61 +135,21 @@ export const _updateTransaction: (
   }
 };
 
-export const _clearUserFromRedisCache: (keyHash: string) => void = async (
-  keyHash
-) => {
-  const client = await clientInstance.getClient();
-  await client.DEL(keyHash);
-};
-
-export const _getVideoSrcFromCache:(key:string) => Promise<Readable | null> = async (key) =>{
+export const _updateNotifications: (
+  keyHash: string,
+  data: Notification[]
+) => void = async (key, data) => {
   try {
-    const client = await clientInstance.getClient();
-    const src = await client.GET(key);
-    if(!src){
-      throw new Error(`[WARNING]: value for key: ${key} does not exist...`);
+    const stringifiedObject: string | null = await client.GET(key);
+    if (!stringifiedObject) {
+      throw new Error(
+        `[Warning]: key-value:${key} tried querying at ${date.toISOString()}`
+      );
     }
-
-    const buffer = Buffer.from(src,"binary");
-    const readableStream = new Readable();
-    readableStream.push(buffer)
-    readableStream.push(null)
-    return readableStream
+    const customerObject: Customer = JSON.parse(stringifiedObject);
+    customerObject.notifications = data;
+    await client.SET(key, JSON.stringify(customerObject));
   } catch (error) {
     console.log(error);
-    return null;
-    
   }
-}
-
-export const _saveBankInfoToCache:(val:Bank) => Promise<void> = async(val) =>{
-  try {
-    const client = await clientInstance.getClient();
-    if(!config.BankKeyHash || !val){
-      throw new Error("[WARNING]: Missing key or val... Could not save user to cache.")
-    }
-    await client.SET(config.BankKeyHash,JSON.stringify(val))
-  } catch (error:any) {
-    console.log(error["message"])
-  }
-}
-
-export const _saveSrcToCache:(key:string,src:string) => Promise<void> = async (key,src) =>{
-  const client = await clientInstance.getClient();
-  if(!key || !src){
-    return;
-  }
-  await client.SET(key,src);
-}
-
-export const _saveUserToCache:(key:string,value:Customer) => Promise<void> = async(key,val)=>{
-  try {
-    const client = await clientInstance.getClient();
-    if(!key || !val){
-      throw new Error("[WARNING]: Missing key or val... Could not save user to cache.")
-    }
-    await client.SET(key,JSON.stringify(val))
-  } catch (error:any) {
-    console.log(error["message"])
-  }
-}
+};

@@ -1,36 +1,31 @@
-
 import * as redis from "redis";
 import config from "../config/config";
 
 const uri = `redis://${config.Microservices.Redis.RedisHostname}:${config.Microservices.Redis.RedisPort}`;
 
-class RedisSingleton{
-    static instance:RedisSingleton;
-    static client:redis.RedisClientType;
+export class RedisSingleton {
+  private static instance: RedisSingleton;
+  private static client: redis.RedisClientType;
 
-    constructor(){
-        if(!RedisSingleton.instance){
-            RedisSingleton.instance = this;
-        }
+  constructor() {
+    if (!RedisSingleton.instance) {
+      RedisSingleton.instance = this;
+      try {
+        console.log("[IN PROGRESS]: Creating Redis Client....");
+        RedisSingleton.client = redis.createClient({ url: uri });
+        RedisSingleton.client.connect();
+        console.log("[COMPLETED]: Redis Client connected....");
+      } catch (error: any) {
+        console.log(error["message"]);
+      }
     }
+    return RedisSingleton.instance;
+  }
 
-    async getClient():Promise<redis.RedisClientType>{
-        if(!RedisSingleton.client){
-            try {
-                console.log("Creating Redis Client....");
-                RedisSingleton.client = redis.createClient({ url: uri });
-                RedisSingleton.client.connect();
-                console.log("Redis Client connected....") 
-                return RedisSingleton.client;  
-            } catch (error:any) {
-                console.log(error["message"])
-            }
-        }
-        return RedisSingleton.client;
+  public static getClient(): redis.RedisClientType {
+    if (!RedisSingleton.instance) {
+      RedisSingleton.instance = new RedisSingleton();
     }
+    return RedisSingleton.client;
+  }
 }
-
-
-const client = new RedisSingleton();
-Object.freeze(client);
-export default client;

@@ -45,7 +45,7 @@ export type Transaction = {
   recipient: string;
 };
 
-export type Customer = {
+export class Customer {
   firstName: string;
   lastName: string;
   email: string;
@@ -57,4 +57,29 @@ export type Customer = {
   accounts: Account[];
   cards: Card[];
   notifications: Notification[];
-};
+  constructor(
+    firstName: string,
+    lastName: string,
+    email: string,
+    country: string | undefined,
+    area: string | undefined,
+    zipcode: string | undefined,
+    isActivated: boolean,
+    transactions: Transaction[],
+    accounts: Account[],
+    cards: Card[],
+    notifications: Notification[]
+  ) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.country = country;
+    this.area = area;
+    this.zipcode = zipcode;
+    this.isActivated = isActivated;
+    this.transactions = transactions;
+    this.accounts = accounts;
+    this.cards = cards;
+    this.notifications = notifications;
+  }
+}
