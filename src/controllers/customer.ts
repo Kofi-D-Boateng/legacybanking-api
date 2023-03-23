@@ -58,7 +58,7 @@ export const getProfile: (req: Request, res: Response) => void = async (
         InvocationType: "RequestResponse",
         Payload: JSON.stringify({
           Function: "getNotifications",
-          Payload: "email1@email.com",
+          Payload: authStatus["body"],
         }),
       })
       .promise();
@@ -74,7 +74,7 @@ export const getProfile: (req: Request, res: Response) => void = async (
     }
     const bankResponse = await axios.get(
       `${config.Microservices.Bank}/${config.Routes.BankingService.getFullCustomerInfo}`,
-      { params: { username: "email1@email.com" } }
+      { params: { username: authStatus["body"] } }
     );
     if (bankResponse.status != 200) {
       res.status(bankResponse.status).json("");
