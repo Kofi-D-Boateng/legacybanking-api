@@ -58,7 +58,7 @@ export const getProfile: (req: Request, res: Response) => void = async (
         InvocationType: "RequestResponse",
         Payload: JSON.stringify({
           Function: "getNotifications",
-          Payload: authStatus["payload"],
+          Payload: authStatus["body"],
         }),
       })
       .promise();
