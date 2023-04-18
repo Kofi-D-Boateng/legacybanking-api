@@ -9,7 +9,7 @@ const whitelist = {
   origin: process.env.ALLOWED_ORIGINS?.split(","),
   credentials: true,
   optionsSuccessStatus: 204,
-  methods: ["GET,POST,PUT,DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: [
     "Origin,Content-Type,Accept,authorization,x-forwarded-for,User-Agent",
   ],
